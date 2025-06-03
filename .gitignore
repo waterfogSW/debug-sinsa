@@ -35,3 +35,5 @@ Icon?
 # 파생 파일
 *.swp
 *.swo 
+
+.cursor
