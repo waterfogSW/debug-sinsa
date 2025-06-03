@@ -10,6 +10,10 @@ const API_BASE_URL = '/api';
 // Stats API
 export const getStats = async (): Promise<Stat[]> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return [];
+    }
     const { data, error } = await supabase.from('stats').select('*');
 
     if (error) {
@@ -25,6 +29,10 @@ export const getStats = async (): Promise<Stat[]> => {
 
 export const updateStat = async (id: string, value: number): Promise<Stat | null> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return null;
+    }
     const { data, error } = await supabase
       .from('stats')
       .update({ value })
@@ -46,6 +54,10 @@ export const updateStat = async (id: string, value: number): Promise<Stat | null
 // Offerings API
 export const getOfferings = async (): Promise<Offering[]> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return [];
+    }
     const { data, error } = await supabase.from('offerings').select('*');
 
     if (error) {
@@ -61,6 +73,10 @@ export const getOfferings = async (): Promise<Offering[]> => {
 
 export const incrementOfferingCount = async (id: OfferingId): Promise<Offering | null> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return null;
+    }
     const { data: currentOffering, error: fetchError } = await supabase
       .from('offerings')
       .select('count')
@@ -95,6 +111,10 @@ export const incrementOfferingCount = async (id: OfferingId): Promise<Offering |
 // Problems API
 export const getProblems = async (limit?: number): Promise<Problem[]> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return [];
+    }
     let query = supabase.from('problems').select('*').order('timestamp', { ascending: false });
     if (limit) {
       query = query.limit(limit);
@@ -114,6 +134,10 @@ export const getProblems = async (limit?: number): Promise<Problem[]> => {
 
 export const createProblem = async (content: string, author?: string): Promise<Problem | null> => {
   try {
+    if (!supabase) {
+      console.error('Supabase client is not initialized');
+      return null;
+    }
     const problemToInsert = {
       content,
       author: author || '익명의 나그네',
