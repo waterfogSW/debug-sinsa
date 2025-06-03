@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .animate-slide-in {
+    animation: slideIn 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 기본 스타일 제거 또는 주석 처리 권장 */
+/* 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+*/
+
+body {
+  font-family: 'Arial', sans-serif; /* 기본 폰트도 Tailwind에서 관리하는 것이 좋음 */
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+  /* Tailwind의 bg-dark 같은 클래스로 body 배경색을 설정하는 것을 고려 */
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d7263d transparent; /* thumb: 신사 붉은색, track: 투명 */
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #d7263d 60%, #bfa16c 100%);
+  border-radius: 8px;
+  border: 1px solid #fff;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #b71c1c 60%, #e5c07b 100%);
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* 완전 투명 */
+  border-radius: 8px;
+} 
