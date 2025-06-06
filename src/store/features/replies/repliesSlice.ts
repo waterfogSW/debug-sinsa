@@ -5,7 +5,7 @@ import {
   createReply as createReplyAPI
 } from '@/services/api';
 import { RootState } from '@/store/store';
-import { incrementStat, StatId } from '../stats/statsSlice';
+import { fetchStats } from '../stats/statsSlice';
 
 interface RepliesState {
   itemsByProblemId: Record<string, Reply[]>; // 문제 ID별 답변 목록 저장
@@ -41,8 +41,7 @@ export const createReply = createAsyncThunk(
     const newReply = await createReplyAPI(problemId, content);
     if (newReply) {
       dispatch(fetchReplies(problemId));
-      const statIdToIncrement: StatId = 'shrineVisits';
-      dispatch(incrementStat(statIdToIncrement));
+      dispatch(fetchStats());
       return newReply;
     } else {
       throw new Error('Failed to create reply (API returned null)');

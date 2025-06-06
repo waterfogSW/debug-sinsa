@@ -3,7 +3,7 @@ import React from 'react';
 interface SectionCardProps {
   title?: string;
   children: React.ReactNode;
-  className?: string; // 외부에서 추가적인 스타일을 적용할 수 있도록
+  className?: string;
 }
 
 const SectionCard: React.FC<SectionCardProps> = ({ title, children, className }) => {

@@ -15,7 +15,6 @@ const initialState: FortuneState = {
   error: null,
 };
 
-// 운세 목록 (예시)
 const fortunes = [
   "오늘은 컴파일 에러가 당신을 피해갈 것입니다.",
   "새로운 라이브러리가 당신의 생산성을 극대화할 것입니다.",

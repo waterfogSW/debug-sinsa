@@ -4,7 +4,7 @@ import { OfferingId } from '@/common/enums/OfferingId';
 import { getOfferings as fetchOfferingsAPI, incrementOfferingCount as incrementOfferingAPI } from '@/services/api';
 import { DEFAULT_OFFERINGS } from '@/common/constants/defaultValues';
 import { RootState } from '@/store/store';
-import { incrementStat, StatId } from '../stats/statsSlice';
+import { fetchStats } from '../stats/statsSlice';
 
 interface OfferingsState {
   items: Offering[];
@@ -34,8 +34,7 @@ export const incrementOfferingCount = createAsyncThunk(
   async (offeringId: OfferingId, { dispatch }) => {
     const updatedOffering = await incrementOfferingAPI(offeringId);
     if (updatedOffering) {
-      const statIdToIncrement: StatId = 'offeringsMade';
-      dispatch(incrementStat(statIdToIncrement));
+      dispatch(fetchStats());
       return updatedOffering;
     } else {
       throw new Error('Failed to increment offering count');

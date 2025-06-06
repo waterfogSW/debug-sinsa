@@ -4,6 +4,7 @@ import { Problem } from '@/domain/Problem';
 import { OfferingId } from '@/common/enums/OfferingId';
 import { Reply } from '@/domain/Reply';
 import { supabase } from '@/lib/supabaseClient'; // Supabase 클라이언트 import
+import { DEFAULT_STATS } from '@/common/constants/defaultValues';
 
 const API_BASE_URL = '/api';
 
@@ -12,42 +13,44 @@ export const getStats = async (): Promise<Stat[]> => {
   try {
     if (!supabase) {
       console.error('Supabase client is not initialized');
-      return [];
+      return DEFAULT_STATS;
     }
-    const { data, error } = await supabase.from('stats').select('*');
 
-    if (error) {
-      console.error('Error fetching stats from Supabase:', error);
-      return [];
+    const [
+      { count: bugsFixed, error: problemsError },
+      { count: shrineVisits, error: repliesError },
+      { data: offeringsData, error: offeringsError },
+    ] = await Promise.all([
+      supabase.from('problems').select('*', { count: 'exact', head: true }),
+      supabase.from('replies').select('*', { count: 'exact', head: true }),
+      supabase.from('offerings').select('count'),
+    ]);
+
+    if (problemsError || repliesError || offeringsError) {
+      console.error('Error fetching stats from Supabase:', {
+        problemsError,
+        repliesError,
+        offeringsError,
+      });
+      return DEFAULT_STATS;
     }
-    return data || [];
+
+    const offeringsMade = offeringsData?.reduce((acc, o) => acc + o.count, 0) || 0;
+
+    const statsMap: Record<string, number> = {
+      bugsFixed: bugsFixed ?? 0,
+      shrineVisits: shrineVisits ?? 0,
+      offeringsMade,
+    };
+    
+    return DEFAULT_STATS.map(stat => ({
+      ...stat,
+      value: statsMap[stat.id] ?? 0,
+    }));
+
   } catch (error) {
     console.error('Unexpected error fetching stats:', error);
-    return [];
-  }
-};
-
-export const updateStat = async (id: string, value: number): Promise<Stat | null> => {
-  try {
-    if (!supabase) {
-      console.error('Supabase client is not initialized');
-      return null;
-    }
-    const { data, error } = await supabase
-      .from('stats')
-      .update({ value })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating stat in Supabase:', error);
-      return null;
-    }
-    return data;
-  } catch (error) {
-    console.error('Unexpected error updating stat:', error);
-    return null;
+    return DEFAULT_STATS;
   }
 };
 

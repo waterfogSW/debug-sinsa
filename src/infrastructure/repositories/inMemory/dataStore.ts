@@ -1,13 +1,7 @@
-import { Stat } from '@/domain/Stat';
 import { Offering } from '@/domain/Offering';
 import { Problem } from '@/domain/Problem';
 import { Reply } from '@/domain/Reply';
 import { OfferingId } from '@/common/enums/OfferingId';
-
-let stats: Stat[] = [
-  { id: 'bugsFixed', value: 0, label: '보고된 버그 수', icon: '🐞' },
-  { id: 'shrineVisits', value: 0, label: '신령 출몰 횟수', icon: '⛩️' },
-];
 
 let offerings: Offering[] = [
   { id: OfferingId.Coffee, name: '커피', icon: '☕', count: 0 },
@@ -20,9 +14,6 @@ let offerings: Offering[] = [
 let problems: Problem[] = [];
 let replies: Reply[] = [];
 let shrineNumber = 0;
-
-export const getInMemoryStats = () => stats;
-export const setInMemoryStats = (newStats: Stat[]) => { stats = newStats; };
 
 export const getInMemoryOfferings = () => offerings;
 export const setInMemoryOfferings = (newOfferings: Offering[]) => { offerings = newOfferings; };
