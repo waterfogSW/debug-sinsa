@@ -56,8 +56,8 @@ export default function ShrineHeader() {
                   멍하니 완충재에 본드를 붙여 뭔가 만들고 있었다.
                 </p>
                 <p className="leading-relaxed">
-                  '뭐하는 거야?'라고 물어봤더니<br />
-                  '디버그 신사입니다'라고.
+                  &apos;뭐하는 거야?&apos;라고 물어봤더니<br />
+                  &apos;디버그 신사입니다&apos;라고.
                 </p>
                 <p className="leading-relaxed">
                   그리고 디버그 신사가 건립됨과 동시에 버그는 사라졌다.<br />
