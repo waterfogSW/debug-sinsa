@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const replyData: Omit<Reply, 'id' | 'timestamp' | 'author'> = {
-        problemId,
+      const replyData = {
+        problem_id: problemId,
         content,
       };
       const newReply = await replyService.createReply(replyData);
