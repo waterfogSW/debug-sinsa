@@ -11,7 +11,6 @@ import {
   selectProblemsFetchStatus,
   selectProblemsFetchError
 } from '@/store/features/problems/problemsSlice';
-import { selectRepliesByProblemId } from '@/store/features/replies/repliesSlice';
 import SectionCard from '@/common/components/SectionCard';
 import ProblemItemCard from '@/components/ProblemItemCard';
 import ReplyModal from '@/components/ReplyModal';
@@ -23,7 +22,6 @@ export default function LiveProblems() {
   const problems = useSelector(selectAllProblems);
   const fetchStatus = useSelector(selectProblemsFetchStatus);
   const fetchError = useSelector(selectProblemsFetchError);
-  const repliesByProblemId = useSelector((state: RootState) => state.replies.itemsByProblemId);
 
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
 
@@ -61,7 +59,7 @@ export default function LiveProblems() {
             <ProblemItemCard 
               problem={problem} 
               onOpenReplies={handleProblemClick} 
-              hasReplies={(repliesByProblemId[problem.id]?.length || 0) > 0}
+              hasReplies={(problem.replies?.[0]?.count || 0) > 0}
             />
           </motion.li>
         ))}

@@ -9,7 +9,7 @@ export class SupabaseProblemRepository implements IProblemRepository {
         console.error('Supabase client is not initialized');
         return [];
       }
-      let query = supabase.from('problems').select('*').order('timestamp', { ascending: false });
+      let query = supabase.from('problems').select('*, replies(count)').order('timestamp', { ascending: false });
       if (limit) {
         query = query.limit(limit);
       }

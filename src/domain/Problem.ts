@@ -3,4 +3,5 @@ export interface Problem {
   content: string;
   author: string;
   timestamp: string;
+  replies: { count: number }[];
 } 
