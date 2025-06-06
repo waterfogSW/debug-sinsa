@@ -22,14 +22,16 @@ export default function LiveProblems() {
   const problems = useSelector(selectAllProblems);
   const fetchStatus = useSelector(selectProblemsFetchStatus);
   const fetchError = useSelector(selectProblemsFetchError);
+  const hasMore = useSelector((state: RootState) => state.problems.hasMore);
+  const nextCursor = useSelector((state: RootState) => state.problems.nextCursor);
 
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
 
   useEffect(() => {
-    if (fetchStatus === 'idle') {
-      dispatch(fetchProblems(PROBLEMS_LIMIT));
+    if (problems.length === 0) {
+      dispatch(fetchProblems({ limit: PROBLEMS_LIMIT }));
     }
-  }, [dispatch, fetchStatus]);
+  }, [dispatch, problems.length]);
 
   const handleProblemClick = (problem: Problem) => {
     setSelectedProblem(problem);
@@ -37,6 +39,12 @@ export default function LiveProblems() {
 
   const handleCloseModal = () => {
     setSelectedProblem(null);
+  };
+
+  const handleLoadMore = () => {
+    if (fetchStatus !== 'loading' && hasMore) {
+      dispatch(fetchProblems({ limit: PROBLEMS_LIMIT, cursor: nextCursor }));
+    }
   };
 
   let content;
@@ -73,6 +81,17 @@ export default function LiveProblems() {
         className={`flex-grow overflow-y-auto pr-1 space-y-4 custom-scrollbar ${fetchStatus === 'loading' && problems.length > 0 ? 'opacity-70' : ''}`}
       >
         {content}
+        {hasMore && (
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={handleLoadMore}
+              disabled={fetchStatus === 'loading'}
+              className="px-4 py-2 bg-primary/80 text-white rounded-md hover:bg-primary disabled:bg-gray-500 disabled:cursor-not-allowed"
+            >
+              {fetchStatus === 'loading' ? '불러오는 중...' : '더 보기'}
+            </button>
+          </div>
+        )}
       </div>
       {selectedProblem && (
         <ReplyModal 

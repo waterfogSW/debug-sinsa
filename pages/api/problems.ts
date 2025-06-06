@@ -6,8 +6,11 @@ const problemService = new ProblemService();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      const problems = await problemService.getAllProblems();
-      res.status(200).json(problems);
+      const limit = typeof req.query.limit === 'string' ? parseInt(req.query.limit, 10) : 50;
+      const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
+      
+      const result = await problemService.getAllProblems({ limit, cursor });
+      res.status(200).json(result);
     } catch (error) {
       console.error('[API Error] Failed to get problems:', error);
       res.status(500).json({ message: 'Failed to retrieve problems' });

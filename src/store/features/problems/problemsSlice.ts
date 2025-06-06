@@ -11,6 +11,8 @@ interface ProblemsState {
   createStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   fetchError: string | null;
   createError: string | null;
+  nextCursor: string | null;
+  hasMore: boolean;
 }
 
 const initialState: ProblemsState = {
@@ -19,17 +21,22 @@ const initialState: ProblemsState = {
   createStatus: 'idle',
   fetchError: null,
   createError: null,
+  nextCursor: null,
+  hasMore: true,
 };
 
 export const fetchProblems = createAsyncThunk(
   'problems/fetchProblems',
-  async (limit?: number) => {
-    const url = limit ? `/api/problems?limit=${limit}` : '/api/problems';
+  async ({ limit, cursor }: { limit: number; cursor?: string | null }) => {
+    let url = `/api/problems?limit=${limit}`;
+    if (cursor) {
+      url += `&cursor=${encodeURIComponent(cursor)}`;
+    }
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error('Failed to fetch problems');
     }
-    const data = await response.json();
+    const data: { problems: Problem[]; nextCursor: string | null } = await response.json();
     return data;
   }
 );
@@ -50,7 +57,7 @@ export const createProblem = createAsyncThunk<Problem, { content: string; author
     
     const { newProblem } = await response.json();
 
-    dispatch(fetchProblems());
+    dispatch(fetchProblems({ limit: 50, cursor: null }));
     dispatch(fetchStats());
     return newProblem;
   }
@@ -62,12 +69,18 @@ const problemsSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProblems.pending, (state) => {
+      .addCase(fetchProblems.pending, (state, action) => {
         state.fetchStatus = 'loading';
       })
-      .addCase(fetchProblems.fulfilled, (state, action: PayloadAction<Problem[]>) => {
+      .addCase(fetchProblems.fulfilled, (state, action) => {
         state.fetchStatus = 'succeeded';
-        state.items = action.payload;
+        if (action.meta.arg.cursor) {
+          state.items.push(...action.payload.problems);
+        } else {
+          state.items = action.payload.problems;
+        }
+        state.nextCursor = action.payload.nextCursor;
+        state.hasMore = action.payload.nextCursor !== null;
         state.fetchError = null;
       })
       .addCase(fetchProblems.rejected, (state, action) => {

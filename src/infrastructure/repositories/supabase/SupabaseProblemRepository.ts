@@ -3,23 +3,35 @@ import { IProblemRepository } from '@/domain/repositories/IProblemRepository';
 import { supabase } from '@/lib/supabaseClient';
 
 export class SupabaseProblemRepository implements IProblemRepository {
-  async getAll(limit?: number): Promise<Problem[]> {
+  async getAll(options: { limit: number; cursor?: string }): Promise<{ problems: Problem[]; nextCursor: string | null }> {
     try {
       if (!supabase) {
-        console.error('Supabase client is not initialized');
-        return [];
+        throw new Error('Supabase client is not initialized');
       }
-      let query = supabase.from('problems').select('*, replies(count)').order('timestamp', { ascending: false });
-      if (limit) {
-        query = query.limit(limit);
+
+      let query = supabase
+        .from('problems')
+        .select('*, replies(count)')
+        .order('timestamp', { ascending: false })
+        .limit(options.limit);
+
+      if (options.cursor) {
+        query = query.lt('timestamp', options.cursor);
       }
+
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching problems from Supabase:', error);
         throw error;
       }
-      return data || [];
+
+      const problems = data || [];
+      let nextCursor: string | null = null;
+      if (problems.length === options.limit) {
+        nextCursor = problems[problems.length - 1].timestamp;
+      }
+
+      return { problems, nextCursor };
     } catch (error) {
       console.error('Unexpected error fetching problems:', error);
       throw error;
@@ -50,7 +62,7 @@ export class SupabaseProblemRepository implements IProblemRepository {
     throw new Error('Method not implemented.');
   }
 
-  async add(problemData: Omit<Problem, 'id' | 'timestamp'>): Promise<Problem> {
+  async add(problemData: Omit<Problem, 'id' | 'timestamp' | 'replies'>): Promise<Problem> {
     try {
       if (!supabase) {
         console.error('Supabase client is not initialized');

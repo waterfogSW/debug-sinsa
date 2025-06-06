@@ -9,12 +9,8 @@ export class ProblemService {
     this.problemRepository = new SupabaseProblemRepository();
   }
 
-  async getAllProblems(limit?: number): Promise<Problem[]> {
-    const problems = await this.problemRepository.getAll(limit);
-    const sortedProblems = problems.sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-    return sortedProblems;
+  async getAllProblems(options: { limit: number; cursor?: string }): Promise<{ problems: Problem[]; nextCursor: string | null }> {
+    return this.problemRepository.getAll(options);
   }
 
   async createProblem(content: string, authorInput?: string): Promise<{ newProblem: Problem }> {
@@ -23,7 +19,7 @@ export class ProblemService {
     }
     const author = authorInput?.trim() || `익명의 나그네(${Math.floor(Math.random() * 1000)})`;
     
-    const newProblemData: Omit<Problem, 'id' | 'timestamp'> = {
+    const newProblemData = {
       content,
       author,
     };
