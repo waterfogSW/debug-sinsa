@@ -1,20 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/store/store';
-import {
-  fetchOfferings,
-  incrementOfferingCount,
-  selectAllOfferings,
-  selectOfferingsStatus,
-  selectOfferingsError,
-  selectOfferingsUpdateStatus
-} from '@/store/features/offerings/offeringsSlice';
-import { Offering } from '@/domain/Offering';
+import { fetchOfferings, incrementOfferingCount } from '@/store/features/offerings/offeringsSlice';
 import { OfferingId } from '@/common/enums/OfferingId';
 import OfferingItemCard from './OfferingItemCard';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function OfferingsContent() {
   const dispatch = useDispatch<AppDispatch>();
@@ -30,11 +21,10 @@ export default function OfferingsContent() {
     }
   }, [dispatch, offeringsStatus]);
 
-  // 주기적인 데이터 갱신을 위한 useEffect
   useEffect(() => {
     const intervalId = setInterval(() => {
       dispatch(fetchOfferings());
-    }, 30000); // 30초마다 갱신
+    }, 30000); 
 
     return () => clearInterval(intervalId);
   }, [dispatch]);

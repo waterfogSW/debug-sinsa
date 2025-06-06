@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Problem } from '@/domain/Problem';
 import { AppDispatch, RootState } from '@/store/store';
 import {
@@ -28,10 +28,20 @@ export default function LiveProblems() {
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
 
   useEffect(() => {
-    if (problems.length === 0) {
-      dispatch(fetchProblems({ limit: PROBLEMS_LIMIT }));
+    if (fetchStatus === 'idle') {
+      dispatch(fetchProblems({ limit: 10 }));
     }
-  }, [dispatch, problems.length]);
+  }, [dispatch, fetchStatus]);
+
+  // 주기적인 데이터 갱신을 위한 useEffect
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // 새로운 고민만 가져오도록 첫 페이지를 요청
+      dispatch(fetchProblems({ limit: 10 }));
+    }, 30000); // 30초마다 갱신
+
+    return () => clearInterval(intervalId);
+  }, [dispatch]);
 
   const handleProblemClick = (problem: Problem) => {
     setSelectedProblem(problem);
@@ -57,20 +67,24 @@ export default function LiveProblems() {
   } else {
     content = (
       <ul className="space-y-3">
-        {problems.map((problem, index) => (
-          <motion.li
-            key={problem.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-          >
-            <ProblemItemCard 
-              problem={problem} 
-              onOpenReplies={handleProblemClick} 
-              hasReplies={(problem.replies?.[0]?.count || 0) > 0}
-            />
-          </motion.li>
-        ))}
+        <AnimatePresence>
+          {problems.map((problem, index) => (
+            <motion.li
+              key={problem.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+              layout
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+            >
+              <ProblemItemCard 
+                problem={problem} 
+                onOpenReplies={handleProblemClick} 
+                hasReplies={(problem.replies?.[0]?.count || 0) > 0}
+              />
+            </motion.li>
+          ))}
+        </AnimatePresence>
       </ul>
     );
   }

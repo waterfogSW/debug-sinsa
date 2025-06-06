@@ -72,16 +72,13 @@ const problemsSlice = createSlice({
       .addCase(fetchProblems.pending, (state, action) => {
         state.fetchStatus = 'loading';
       })
-      .addCase(fetchProblems.fulfilled, (state, action) => {
+      .addCase(fetchProblems.fulfilled, (state, action: PayloadAction<{ problems: Problem[]; nextCursor: string | null }>) => {
         state.fetchStatus = 'succeeded';
-        if (action.meta.arg.cursor) {
-          state.items.push(...action.payload.problems);
-        } else {
-          state.items = action.payload.problems;
-        }
-        state.nextCursor = action.payload.nextCursor;
+        const newProblems = action.payload.problems.filter(
+          p => !state.items.some(existing => existing.id === p.id)
+        );
+        state.items = [...newProblems, ...state.items].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         state.hasMore = action.payload.nextCursor !== null;
-        state.fetchError = null;
       })
       .addCase(fetchProblems.rejected, (state, action) => {
         state.fetchStatus = 'failed';
