@@ -5,4 +5,5 @@ export interface IOfferingRepository {
   getAll(): Promise<Offering[]>;
   findById(id: OfferingId): Promise<Offering | null>;
   update(offering: Offering): Promise<Offering | null>;
+  getTotalCount(): Promise<number>;
 } 

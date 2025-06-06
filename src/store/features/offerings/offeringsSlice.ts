@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Offering } from '@/domain/Offering';
 import { OfferingId } from '@/common/enums/OfferingId';
-import { getOfferings as fetchOfferingsAPI, incrementOfferingCount as incrementOfferingAPI } from '@/services/api';
 import { DEFAULT_OFFERINGS } from '@/common/constants/defaultValues';
 import { RootState } from '@/store/store';
 import { fetchStats } from '../stats/statsSlice';
@@ -24,21 +23,27 @@ const initialState: OfferingsState = {
 
 // 모든 공물 정보를 가져오는 thunk
 export const fetchOfferings = createAsyncThunk('offerings/fetchOfferings', async () => {
-  const response = await fetchOfferingsAPI();
-  return response || [];
+  const response = await fetch('/api/offerings');
+  if (!response.ok) {
+    throw new Error('Failed to fetch offerings');
+  }
+  const data = await response.json();
+  return data;
 });
 
 // 특정 공물의 카운트를 증가시키는 thunk
 export const incrementOfferingCount = createAsyncThunk(
   'offerings/incrementOfferingCount',
   async (offeringId: OfferingId, { dispatch }) => {
-    const updatedOffering = await incrementOfferingAPI(offeringId);
-    if (updatedOffering) {
-      dispatch(fetchStats());
-      return updatedOffering;
-    } else {
+    const response = await fetch(`/api/offerings/${offeringId}/increment`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
       throw new Error('Failed to increment offering count');
     }
+    const updatedOffering = await response.json();
+    dispatch(fetchStats());
+    return updatedOffering;
   }
 );
 

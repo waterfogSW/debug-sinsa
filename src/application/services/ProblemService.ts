@@ -1,23 +1,23 @@
 import { Problem } from '@/domain/Problem';
 import { IProblemRepository } from '@/domain/repositories/IProblemRepository';
-import { InMemoryProblemRepository } from '@/infrastructure/repositories/inMemory/InMemoryProblemRepository';
+import { SupabaseProblemRepository } from '@/infrastructure/repositories/supabase/SupabaseProblemRepository';
 
 export class ProblemService {
   private problemRepository: IProblemRepository;
 
   constructor() {
-    this.problemRepository = new InMemoryProblemRepository();
+    this.problemRepository = new SupabaseProblemRepository();
   }
 
   async getAllProblems(limit?: number): Promise<Problem[]> {
-    const problems = await this.problemRepository.getAll();
+    const problems = await this.problemRepository.getAll(limit);
     const sortedProblems = problems.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
-    return limit ? sortedProblems.slice(0, limit) : sortedProblems;
+    return sortedProblems;
   }
 
-  async createProblem(content: string, authorInput?: string): Promise<{ newProblem: Problem; updatedStats?: any }> {
+  async createProblem(content: string, authorInput?: string): Promise<{ newProblem: Problem }> {
     if (!content.trim()) {
       throw new Error('Content cannot be empty.');
     }

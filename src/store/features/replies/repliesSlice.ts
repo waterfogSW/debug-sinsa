@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Reply } from '@/domain/Reply';
-import {
-  getReplies as fetchRepliesAPI,
-  createReply as createReplyAPI
-} from '@/services/api';
 import { RootState } from '@/store/store';
 import { fetchStats } from '../stats/statsSlice';
 
@@ -29,8 +25,12 @@ const initialState: RepliesState = {
 export const fetchReplies = createAsyncThunk(
   'replies/fetchReplies',
   async (problemId: string) => {
-    const response = await fetchRepliesAPI(problemId);
-    return { problemId, replies: response || [] };
+    const response = await fetch(`/api/replies?problemId=${encodeURIComponent(problemId)}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch replies');
+    }
+    const replies = await response.json();
+    return { problemId, replies: replies || [] };
   }
 );
 
@@ -38,14 +38,22 @@ export const fetchReplies = createAsyncThunk(
 export const createReply = createAsyncThunk(
   'replies/createReply',
   async ({ problemId, content }: { problemId: string; content: string }, { dispatch }) => {
-    const newReply = await createReplyAPI(problemId, content);
-    if (newReply) {
-      dispatch(fetchReplies(problemId));
-      dispatch(fetchStats());
-      return newReply;
-    } else {
-      throw new Error('Failed to create reply (API returned null)');
+    const response = await fetch('/api/replies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ problemId, content }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create reply');
     }
+    
+    const newReply = await response.json();
+
+    dispatch(fetchReplies(problemId));
+    dispatch(fetchStats());
+    return newReply;
   }
 );
 

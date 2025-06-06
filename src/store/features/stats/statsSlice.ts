@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Stat } from '@/domain/Stat';
-import { getStats as fetchStatsAPI } from '@/services/api';
+import { StatService } from '@/application/services/StatService';
 import { DEFAULT_STATS } from '@/common/constants/defaultValues';
 import { RootState } from '@/store/store';
 
@@ -18,8 +18,10 @@ const initialState: StatsState = {
   error: null,
 };
 
+const statService = new StatService();
+
 export const fetchStats = createAsyncThunk('stats/fetchStats', async () => {
-  const response = await fetchStatsAPI();
+  const response = await statService.getLiveStats();
   return response || [];
 });
 

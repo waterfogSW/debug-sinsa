@@ -1,13 +1,13 @@
 import { Offering } from '@/domain/Offering';
 import { OfferingId } from '@/common/enums/OfferingId';
 import { IOfferingRepository } from '@/domain/repositories/IOfferingRepository';
-import { InMemoryOfferingRepository } from '@/infrastructure/repositories/inMemory/InMemoryOfferingRepository';
+import { SupabaseOfferingRepository } from '@/infrastructure/repositories/supabase/SupabaseOfferingRepository';
 
 export class OfferingService {
   private offeringRepository: IOfferingRepository;
 
   constructor() {
-    this.offeringRepository = new InMemoryOfferingRepository();
+    this.offeringRepository = new SupabaseOfferingRepository();
   }
 
   async getAllOfferings(): Promise<Offering[]> {
@@ -19,23 +19,14 @@ export class OfferingService {
   }
 
   async incrementOffering(id: OfferingId): Promise<Offering | null> {
-    let updatedOffering: Offering | null = null;
-    if (this.offeringRepository instanceof InMemoryOfferingRepository) {
-        updatedOffering = await this.offeringRepository.incrementCount(id);
-    } else {
-        const offering = await this.offeringRepository.findById(id);
-        if (offering) {
-            offering.count += 1;
-            updatedOffering = await this.offeringRepository.update(offering);
-        } else {
-            return null;
-        }
+    const offering = await this.offeringRepository.findById(id);
+    if (!offering) {
+      // 또는 특정 에러를 던질 수 있습니다.
+      return null;
     }
 
-    if (!updatedOffering) {
-        return null;
-    }
-
-    return updatedOffering;
+    offering.count += 1;
+    
+    return this.offeringRepository.update(offering);
   }
 }

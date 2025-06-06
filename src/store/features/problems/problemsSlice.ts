@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Problem } from '@/domain/Problem';
-import {
-  getProblems as fetchProblemsAPI,
-  createProblem as createProblemAPI 
-} from '@/services/api';
 import { RootState } from '@/store/store';
 import { fetchStats } from '../stats/statsSlice';
 
@@ -28,23 +24,35 @@ const initialState: ProblemsState = {
 export const fetchProblems = createAsyncThunk(
   'problems/fetchProblems',
   async (limit?: number) => {
-    const response = await fetchProblemsAPI(limit);
-    return response || [];
+    const url = limit ? `/api/problems?limit=${limit}` : '/api/problems';
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Failed to fetch problems');
+    }
+    const data = await response.json();
+    return data;
   }
 );
 
 export const createProblem = createAsyncThunk<Problem, { content: string; author?: string }>(
   'problems/createProblem',
   async ({ content, author }, { dispatch }) => {
-    const response: Problem | null = await createProblemAPI(content, author);
+    const response = await fetch('/api/problems', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, author }),
+    });
 
-    if (response) {
-      dispatch(fetchProblems());
-      dispatch(fetchStats());
-      return response;
-    } else {
-      throw new Error('Failed to create problem (API returned null or invalid response)');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to create problem');
     }
+    
+    const { newProblem } = await response.json();
+
+    dispatch(fetchProblems());
+    dispatch(fetchStats());
+    return newProblem;
   }
 );
 
